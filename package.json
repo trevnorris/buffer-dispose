@@ -18,7 +18,7 @@
     "bindings": "*",
     "njsutil": ">=0.0.3"
   },
-  "main": "lib/dispose.js",
+  "main": "lib/buffer_dispose.js",
   "engineStrict": true,
   "license": "MIT"
 }

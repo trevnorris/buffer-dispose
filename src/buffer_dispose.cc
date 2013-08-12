@@ -49,4 +49,4 @@ void Initialize(Handle<Object> target) {
 
 }  // namespace bdispose
 
-NODE_MODULE(bdispose, bdispose::Initialize)
+NODE_MODULE(buffer_dispose, bdispose::Initialize)

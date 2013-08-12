@@ -1,5 +1,8 @@
 ## buffer-dispose
 
+If this is so dangerous why should you use it? Because it can drastically
+increase throughput by relieving pressure from the garbage collector.
+
 This is what's left of an attempt to allow users to manually free memory
 attached to a Buffer instance. It was too precarious to do in core, so now I'm
 making my efforts available here.
@@ -7,7 +10,7 @@ making my efforts available here.
 Use like so:
 
 ```javascript
-var dispose = require('buffer_dispose').dispose;
+var dispose = require('buffer-dispose');
 
 // this can only be used on non-slices, will throw otherwise
 var SlowBuffer = require('buffer').SlowBuffer;
@@ -28,7 +31,7 @@ been removed no incoming I/O is directly part of a slice. Though this is
 Take the following example:
 
 ```javascript
-var dispose = require('buffer_dispose').dispose;
+var dispose = require('buffer-dispose');
 
 function onData(chunk) {
   // do some quick operations on the chunk
@@ -49,7 +52,7 @@ events. In the following example a buffer is queued to be written to disk, but
 then memory is released before the asynchronous event is able to complete.
 
 ```javascript
-var dispose = require('buffer_dispose').dispose;
+var dispose = require('buffer-dispose');
 var fs = require('fs');
 var buf = require('buffer').SlowBuffer(10);
 buf.fill('a');
@@ -60,6 +63,9 @@ fs.writeFile('test.txt', buf, function() { });
 dispose(buf);
 ```
 
-So then if this is so dangerous why should you use it? Because it can
-drastically increase throughput by relieving pressure from the garbage
-collector.
+To install this from a non-globally installed build of master, use the
+following:
+
+```
+/path/to/build/node `which npm` --nodedir=/path/to/build install buffer-dispose
+```
