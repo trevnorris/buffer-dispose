@@ -1,0 +1,23 @@
+{
+  "name": "buffer-dispose",
+  "version": "0.0.1",
+  "description": "Incredibly unsafe way to free a Buffer",
+  "author": "Trevor Norris <trev.norris@gmail.com> (http://trevnorris.com)",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/trevnorris/buffer-dispose.git"
+  },
+  "bugs": {
+    "url": "https://github.com/trevnorris/buffer-dispose/issues",
+    "email": "trev.norris@gmail.com"
+  },
+  "engines": {
+    "node": ">=0.11.3"
+  },
+  "dependencies": {
+    "bindings": "*"
+  },
+  "main": "lib/dispose.js",
+  "engineStrict": true,
+  "license": "MIT"
+}
