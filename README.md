@@ -69,3 +69,13 @@ following:
 ```
 /path/to/build/node `which npm` --nodedir=/path/to/build install buffer-dispose
 ```
+
+To build the library I do the following:
+
+```
+/path/to/build/node `which npm` --nodedir=/path/to/build install njsutil bindings
+/path/to/build/node `which node-gyp` rebuild --nodedir=/path/to/build
+```
+
+Probably a better way to do this, but eh. It works for now. Submit a ticket if
+you have something better.
