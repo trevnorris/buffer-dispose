@@ -7,7 +7,7 @@ This is what's left of an attempt to allow users to manually free memory
 attached to a Buffer instance. It was too precarious to do in core, so now I'm
 making my efforts available here.
 
-Use like so:
+### Usage
 
 ```javascript
 var dispose = require('buffer-dispose');
@@ -63,6 +63,8 @@ fs.writeFile('test.txt', buf, function() { });
 dispose(buf);
 ```
 
+### Building
+
 To install this from a non-globally installed build of master, use the
 following:
 
@@ -79,3 +81,16 @@ To build the library I do the following:
 
 Probably a better way to do this, but eh. It works for now. Submit a ticket if
 you have something better.
+
+### Performance Tests
+
+To see how using this module can help your I/O I've included a performance test!
+It's easy to run (once you have the module built and all). Just run this:
+
+```
+/path/to/build/node ./speed/tcp.js <add "true" here to dispose buffers>
+```
+
+Disposing buffers: 20.5 Gb/s
+
+Not disposing: 17.7 Gb/s
