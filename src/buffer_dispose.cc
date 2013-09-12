@@ -4,7 +4,7 @@
 #include <node_buffer.h>
 #include <v8.h>
 
-#include <njsutil.h>
+#include "njsutil.h"
 
 namespace bdispose {
 
@@ -19,30 +19,45 @@ using v8::String;
 using v8::Value;
 
 
+inline void ClearBuffer(Local<Object> buf) {
+  if (node::Buffer::Length(buf) > 0)
+    buf->SetIndexedPropertiesToExternalArrayData(NULL,
+                                                 v8::kExternalUnsignedByteArray,
+                                                 0);
+}
+
+
 void BufferDispose(const FunctionCallbackInfo<Value>& args) {
   NJ_SCOPE_SETUP();
-
-  if (!args[0]->IsObject())
-    return njsutil::ThrowTypeError("argument must be an object");
 
   Local<Object> buf = args[0].As<Object>();
   char* data = node::Buffer::Data(buf);
   size_t length = node::Buffer::Length(buf);
 
   if (length > 0)
-    buf->SetIndexedPropertiesToExternalArrayData(NULL,
-                                                 v8::kExternalUnsignedByteArray,
-                                                 0);
+    isolate->AdjustAmountOfExternalAllocatedMemory(-length);
+
+  ClearBuffer(buf);
+
   if (data != NULL)
     free(data);
 }
 
 
+void BufferUnslice(const FunctionCallbackInfo<Value>& args) {
+  NJ_SCOPE_SETUP();
+
+  Local<Object> buf = args[0].As<Object>();
+  ClearBuffer(buf);
+}
+
+
 void Initialize(Handle<Object> target) {
-  HandleScope scope(Isolate::GetCurrent());
+  Isolate* isolate = Isolate::GetCurrent();
+  HandleScope scope(isolate);
 
   Local<FunctionTemplate> t = FunctionTemplate::New(BufferDispose);
-  t->SetClassName(String::New("dispose"));
+  t->SetClassName(String::NewFromUtf8(isolate, "dispose"));
   target->Set(String::New("dispose"), t->GetFunction());
 }
 
