@@ -1,6 +1,6 @@
 {
   "name": "buffer-dispose",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Incredibly unsafe way to free a Buffer",
   "author": "Trevor Norris <trev.norris@gmail.com> (http://trevnorris.com)",
   "repository": {
