@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "bindings": "*",
-    "njsutil": ">=0.0.4"
+    "njsutil": ">=0.0.5"
   },
   "main": "lib/buffer_dispose.js",
   "engineStrict": true,
