@@ -3,13 +3,17 @@ var cluster = require('cluster');
 var dispose = require('../lib/buffer_dispose');
 
 if (!cluster.isMaster) {
-  var b = require('buffer').SlowBuffer(1<<16 - 1);
+  var b = require('buffer').SlowBuffer(1 << 16);
+
   var client = net.connect(8123, function() {
-    client.on('drain', function() {
-      client.write(b);
-    });
-    client.write(b);
+    client.on('drain', writeData);
+    writeData();
   });
+
+  function writeData() {
+    while (client.write(b));
+  }
+
   return;
 }
 
@@ -26,7 +30,7 @@ net.createServer(function(c) {
   if (shouldDispose)
     console.error('Your unicorns are disposing the buffers');
   else
-    console.log('Sent your buffer disposing unicorns to the glue factory :(');
+    console.error('Sent your buffer disposing unicorns to the glue factory :(');
   console.error('\nlistening on port 8123');
   cluster.fork();
 });

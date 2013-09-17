@@ -1,10 +1,7 @@
 #include <stdlib.h>
-
+#include <v8.h>
 #include <node.h>
 #include <node_buffer.h>
-#include <v8.h>
-
-#include "njsutil.h"
 
 namespace bdispose {
 
@@ -19,36 +16,34 @@ using v8::String;
 using v8::Value;
 
 
-inline void ClearBuffer(Local<Object> buf) {
-  if (node::Buffer::Length(buf) > 0)
+void BufferDispose(const FunctionCallbackInfo<Value>& args) {
+  // Safe since we've already done the IsObject check from JS.
+  Local<Object> buf = args[0].As<Object>();
+  char* data = static_cast<char*>(buf->GetIndexedPropertiesExternalArrayData());
+  size_t length = buf->GetIndexedPropertiesExternalArrayDataLength();
+
+  if (length > 0) {
+    args.GetIsolate()->AdjustAmountOfExternalAllocatedMemory(-length);
     buf->SetIndexedPropertiesToExternalArrayData(NULL,
                                                  v8::kExternalUnsignedByteArray,
                                                  0);
-}
+  }
 
-
-void BufferDispose(const FunctionCallbackInfo<Value>& args) {
-  NJ_SCOPE_SETUP();
-
-  Local<Object> buf = args[0].As<Object>();
-  char* data = node::Buffer::Data(buf);
-  size_t length = node::Buffer::Length(buf);
-
-  if (length > 0)
-    isolate->AdjustAmountOfExternalAllocatedMemory(-length);
-
-  ClearBuffer(buf);
-
-  if (data != NULL)
+  if (data != NULL) {
     free(data);
+  }
 }
 
 
 void BufferUnslice(const FunctionCallbackInfo<Value>& args) {
-  NJ_SCOPE_SETUP();
-
   Local<Object> buf = args[0].As<Object>();
-  ClearBuffer(buf);
+  size_t length = buf->GetIndexedPropertiesExternalArrayDataLength();
+
+  if (length > 0) {
+    buf->SetIndexedPropertiesToExternalArrayData(NULL,
+                                                 v8::kExternalUnsignedByteArray,
+                                                 0);
+  }
 }
 
 
@@ -57,8 +52,14 @@ void Initialize(Handle<Object> target) {
   HandleScope scope(isolate);
 
   Local<FunctionTemplate> t = FunctionTemplate::New(BufferDispose);
-  t->SetClassName(String::NewFromUtf8(isolate, "dispose"));
-  target->Set(String::New("dispose"), t->GetFunction());
+  Local<String> name = String::NewFromUtf8(isolate, "dispose");
+  t->SetClassName(name);
+  target->Set(name, t->GetFunction());
+
+  t = FunctionTemplate::New(BufferUnslice);
+  name = String::NewFromUtf8(isolate, "unslice");
+  t->SetClassName(name);
+  target->Set(name, t->GetFunction());
 }
 
 

@@ -25,8 +25,8 @@ console.log(buf);
 
 It's mainly meant to be used for incoming data. Now that the
 `SlabAllocator` has been removed no incoming I/O is directly part of a
-slice. Though this is **only** the case when the stream is in **flowing
-mode**.
+slice. Though this is mostly likely only the case when the stream is in
+**flowing mode**.
 
 Take the following example:
 
@@ -50,7 +50,7 @@ disposed when the operation is complete. Though you **must** make sure all
 requests against the data are complete. This means you must be aware of any
 asynchronous events. In the following example a buffer is queued to be
 written to disk, but then memory is released before the asynchronous event
-is able to complete.
+is able to finish.
 
 ```javascript
 var dispose = require('buffer-dispose');
@@ -93,6 +93,24 @@ this:
 /path/to/build/node ./speed/tcp.js <add "true" here to dispose buffers>
 ```
 
-Disposing buffers: 20.5 Gb/s
+The below table shows performance differences cleaning up incoming Buffers
+at specific sizes. As we can see, the act of disposing has a performance
+cost. While in every case we save on memory usage, if performance is more
+imperative then tune your application accordingly.
 
-Not disposing: 17.7 Gb/s
+```
+64KB Writes     Throughput   Memory Usage
+-----------------------------------------
+Sad Ponies       17.3 Gb/s       207.3 MB
+Magic Unicorns   29.0 Gb/s        44.6 MB
+
+32KB Writes     Throughput   Memory Usage
+-----------------------------------------
+Sad Ponies       17.2 Gb/s       201.7 MB
+Magic Unicorns   20.5 Gb/s        44.3 MB
+
+16KB Writes     Throughput   Memory Usage
+-----------------------------------------
+Sad Ponies       12.3 Gb/s      206.4 MB
+Magic Unicorns   11.4 Gb/s       44.2 MB
+```
