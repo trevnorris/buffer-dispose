@@ -7,7 +7,24 @@ This is what's left of an attempt to allow users to manually free memory
 attached to a Buffer instance. It was too precarious to do in core, so now
 I'm making my efforts available here.
 
+-----
+
+**Note:** This code is kept up with latest master. When v0.12 is released a
+0.1 branch will be created to maintain stability.
+
+-----
+
 ### Usage
+
+First a note must be made that `Buffer` has been rewritten in Node v0.11, and
+`SlowBuffer` now has a new use. Where `Buffer` will automatically return a
+slice of data from a larger slab `SlowBuffer` will always allocate the exact
+amount requested, but `SlowBuffer` now returns a normal instance of `Buffer`
+instead of its own type.
+
+For this reason the following example uses `SlowBuffer`. Otherwise
+`buffer-dispose` would only remove the reference to the slice it pointed to, but
+not free the actual memory.
 
 ```javascript
 var dispose = require('buffer-dispose');
@@ -23,12 +40,19 @@ console.log(buf);
 // <Buffer >
 ```
 
-It's mainly meant to be used for incoming data. Now that the
-`SlabAllocator` has been removed no incoming I/O is directly part of a
-slice. Though this is mostly likely only the case when the stream is in
-**flowing mode**.
+The best use case is when receiving incoming data. Previously data returned from
+an incoming `read()` or `'data'` event was allocated from an internal slab. This
+has been removed, and now all incoming allocations are `malloc`'d individually.
 
-Take the following example:
+While this might seem to be a waste, understand that the overhead of tracking
+the slab along with the associated V8 calls necessary to do so, outweigh any
+performance benefit possibly gained.
+
+-----
+
+The following is the simplest example of immediately disposing of incoming data.
+Remember that all incoming buffers from a connection are discretely allocated,
+allowing the data to be immediately `free()`'d.
 
 ```javascript
 var dispose = require('buffer-dispose');
@@ -45,12 +69,10 @@ function onConnection(socket) {
 require('net').createServer(onConnection).listen(8000);
 ```
 
-Each incoming chunk in the above case is uniquely allocated and can be
-disposed when the operation is complete. Though you **must** make sure all
-requests against the data are complete. This means you must be aware of any
-asynchronous events. In the following example a buffer is queued to be
-written to disk, but then memory is released before the asynchronous event
-is able to finish.
+Though **make sure** all requests against the data are complete. This means you
+must be aware of any asynchronous events. In the following example a buffer is
+queued to be written to disk, but then memory is released before the
+asynchronous event is able to finish.
 
 ```javascript
 var dispose = require('buffer-dispose');
@@ -93,24 +115,24 @@ this:
 /path/to/build/node ./speed/tcp.js <add "true" here to dispose buffers>
 ```
 
-The below table shows performance differences cleaning up incoming Buffers
-at specific sizes. As we can see, the act of disposing has a performance
-cost. While in every case we save on memory usage, if performance is more
-imperative then tune your application accordingly.
+The below table shows performance differences cleaning up incoming Buffers at
+specific sizes. As we can see, the act of disposing has a performance cost.
+While in every case we save on memory usage, if performance is more imperative
+then tune your application accordingly.
 
 ```
 64KB Writes     Throughput   Memory Usage
 -----------------------------------------
-Sad Ponies       17.3 Gb/s       207.3 MB
-Magic Unicorns   29.0 Gb/s        44.6 MB
+Sad Ponies       26.2 Gb/s       243.2 MB
+Magic Unicorns   42.5 Gb/s        47.6 MB
 
 32KB Writes     Throughput   Memory Usage
 -----------------------------------------
-Sad Ponies       17.2 Gb/s       201.7 MB
-Magic Unicorns   20.5 Gb/s        44.3 MB
+Sad Ponies       26.0 Gb/s       243.4 MB
+Magic Unicorns   37.6 Gb/s        47.7 MB
 
 16KB Writes     Throughput   Memory Usage
 -----------------------------------------
-Sad Ponies       12.3 Gb/s      206.4 MB
-Magic Unicorns   11.4 Gb/s       44.2 MB
+Sad Ponies       25.3 Gb/s      243.5 MB
+Magic Unicorns   26.6 Gb/s       47.6 MB
 ```
