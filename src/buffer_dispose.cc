@@ -51,12 +51,12 @@ void Initialize(Handle<Object> target) {
   Isolate* isolate = Isolate::GetCurrent();
   HandleScope scope(isolate);
 
-  Local<FunctionTemplate> t = FunctionTemplate::New(BufferDispose);
+  Local<FunctionTemplate> t = FunctionTemplate::New(isolate, BufferDispose);
   Local<String> name = String::NewFromUtf8(isolate, "dispose");
   t->SetClassName(name);
   target->Set(name, t->GetFunction());
 
-  t = FunctionTemplate::New(BufferUnslice);
+  t = FunctionTemplate::New(isolate, BufferUnslice);
   name = String::NewFromUtf8(isolate, "unslice");
   t->SetClassName(name);
   target->Set(name, t->GetFunction());
