@@ -1,3 +1,4 @@
+FOO BAR
 ## buffer-dispose
 
 If this is so dangerous why should you use it? Because it can drastically
